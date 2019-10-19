@@ -34,7 +34,7 @@ class Environment(object):
         self._timeout = timeout
 
         # Load measurements.
-        with open(results_file, 'r') as f:
+        with open(results_file, 'rb') as f:
             results = pickle.load(f)
 
         # random.seed(1234) # random shuffle of instance order (for all configs)

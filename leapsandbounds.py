@@ -39,7 +39,7 @@ def leaps_and_bounds(env, n, epsilon, delta, zeta, k0, theta_multiplier):
         b = int(math.ceil(R * math.log(40 * 3 * n * k * (k + 1) / zeta) / (delta * epsilon * epsilon)))
         print('b={}, theta={}, total runtime so far={}'.format(b, theta, env.get_total_runtime()))
         q_hat = []
-        for i in xrange(n):
+        for i in range(n):
             q_hat_i = ebgstop_slave_alg(env, i, b, delta, theta, k, epsilon, zeta, n)
             q_hat.append(q_hat_i)
         if np.min(q_hat) < theta:
@@ -57,7 +57,7 @@ def ebgstop_slave_alg(env, i, b, delta, theta, k, epsilon, zeta, n):
     sumq, sum_q_squared = 0, 0
     kk = 0  # Corresponds to l in the paper.
 
-    for j in xrange(b):
+    for j in range(b):
         elapsed = 0
         if t > 0:
             _, elapsed, _ = env.run(config_id=i, instance_id=j, timeout=min(t, tau))

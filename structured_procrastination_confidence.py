@@ -27,11 +27,14 @@ def structured_procrastination_confidence(env, n, k0, theta_multiplier, total_ti
     t0, t1 = 0, 0
 
     results = []
+    configs_r = []
+    configs_total_time = []
 
     for stop_time in stop_times:
         while time_so_far < stop_time:
 
             i, _ = min([(cid, config.get_confidence_bound(iter_count)) for cid, config in configs.items()], key=lambda t: t[1])
+
             _, elapsed_time, lcb, instance_id = configs[i].execute_step(env, iter_count)
             time_so_far += elapsed_time
 
@@ -44,19 +47,27 @@ def structured_procrastination_confidence(env, n, k0, theta_multiplier, total_ti
 
         num_actives = [(i, c.get_num_active()) for i, c in configs.items()]
         i_star, i_star_r = max(num_actives, key=lambda t: t[1])
-        print("------- cpu_days_so_far={}, best_config_id={}, saving results -------".format(int(time_so_far / day_in_seconds), i_star))
+        print("------- cpu_days_so_far={}, iter_count={},  best_config_id={}, best_config_q={}, best_config_r={}, saving results -------".format(int(time_so_far / day_in_seconds), iter_count, i_star, configs[i_star].q, configs[i_star].r))
 
         results.append({'iterations':iter_count,
                         'best_config':i_star,
                         'best_config_theta':configs[i_star].theta,
                         'best_config_r':i_star_r,
                         'best_config_q':configs[i_star].q,
-                        # 'bes_config_delta':configs[i_star]
                         'total_runtime':time_so_far,
                         'total_resumed_runtime':env.get_total_resumed_runtime()})
 
+        configs_r.append([(i, c.r) for i, c in configs.items()])
+        configs_total_time.append([(i, env.get_runtime_per_config()[i]) for i, _ in configs.items()])
+
         with open(os.path.join('results', 'results_spc.p'), 'wb') as f:  # periodically save results
             pickle.dump(results, f)
+
+        with open(os.path.join('results', 'configs_r_spc.p'), 'wb') as f:  # periodically save results
+            pickle.dump(configs_r, f)
+
+        with open(os.path.join('results', 'configs_total_time_spc.p'), 'wb') as f:  # periodically save results
+            pickle.dump(configs_total_time, f)
 
     num_actives = [(i, c.get_num_active()) for i, c in configs.items()]
     i_star, _ = max(num_actives, key=lambda t:t[1])
@@ -70,7 +81,7 @@ def main():
     parser.add_argument('--theta-multiplier', help='Theta multiplier from the paper', type=float, default=2.)
     parser.add_argument('--measurements-filename', help='Filename to load measurement results from', type=str, default='measurements.dump')
     parser.add_argument('--measurements-timeout', help='Timeout (seconds) used for the measurements', type=float, default=900.)
-    parser.add_argument('--total_time_budget', help='Total time (seconds) allowed', type=float, default=103680000.)  # default: 60480000 seconds = 700 CPU days; 103680000 == 1200 CPU days
+    parser.add_argument('--total_time_budget', help='Total time (seconds) allowed', type=float, default=24.*60.*60.*2700.)  # 2700 CPU days;
     args = vars(parser.parse_args())
 
     k0 = args['k0']
@@ -89,7 +100,8 @@ def main():
     print("running structured_procrastination_confidence")
 
     step_size = int(day_in_seconds)  # CPU day, in second
-    stop_times = range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size)  # check results at 1,2,3,..,9,10,20,30,... CPU days
+    # stop_times = range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size)  # check results at 1,2,3,..,9,10,20,30,... CPU days
+    stop_times = range(step_size, 10 * int(day_in_seconds) + 1, step_size) + range(50 * int(day_in_seconds), int(total_time_budget) + 1, 50 * step_size)  # check results at 1,2,3,..,9,10,50,100,150,... CPU days
 
     t0 = time.time()
     best_config_index, configs = structured_procrastination_confidence(env, num_configs, k0, theta_multiplier, total_time_budget, stop_times)

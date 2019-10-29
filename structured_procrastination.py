@@ -26,7 +26,7 @@ from util import format_runtime, day_in_seconds
 C = 12.  # constant for l_i
 
 
-def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplier, stop_times):
+def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplier, stop_times, deltas):
     """Implementation of Structured Procrastination."""
     # The names of the variables used here agree with the pseudocode in the paper,
     # except q is used instead of the paper's upper-case Q, and qq is used instead
@@ -50,12 +50,16 @@ def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplie
 
     # Main loop.
     results = []
+    configs_r = []
+    configs_total_time = []
+
     current_delta = 1
     iter_count = 0
     time_so_far = 0.
-    # while current_delta > delta:  # Line 9, but stop when target delta reached.
-    for stop_time in stop_times:
-        while time_so_far < stop_time:
+    for delta in deltas:
+        while current_delta > delta:  # Line 9, but stop when target delta reached.
+    # for stop_time in stop_times:
+    #     while time_so_far < stop_time:
             iter_count += 1
             _, i = heapq.heappop(heap)
             ll, theta = q[i].pop(0)
@@ -79,24 +83,35 @@ def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplie
             time_so_far += elapsed
             heapq.heappush(heap, (r_sum[i] / k[i], i))  # Bookeeping for the heap.
 
-        i_star = np.argmax(r_sum)
-        current_delta = math.sqrt(1 + epsilon) * qq[i_star] / k[i_star]
+            i_star = np.argmax(r_sum)
+            current_delta = math.sqrt(1 + epsilon) * qq[i_star] / k[i_star]
         print("------- cpu_days_so_far={}, best_config_id={}, delta={}, theta={}, q={}, k={}. saving results -------".format(int(time_so_far / day_in_seconds), i_star, current_delta, theta, qq[i_star], k[i_star]))
 
         results.append({'iterations':iter_count,
                         'best_config':i_star,
                         'best_config_theta':theta,
                         'best_config_delta':current_delta,
+                        'best_config_q':qq[i_star],
+                        'best_config_k':k[i_star],
                         'total_runtime':time_so_far,
                         'total_resumed_runtime':env.get_total_resumed_runtime()})
+
+        configs_r.append([(i, k[i]) for i in range(n)])
+        configs_total_time.append([(i, env.get_runtime_per_config()[i]) for i in range(n)])
 
         with open(os.path.join('results', 'results_sp_eps=' + str(epsilon) + '.p'), 'wb') as f:  # periodically save results
             pickle.dump(results, f)
 
+        with open(os.path.join('results', 'configs_r_sp.p'), 'wb') as f:  # periodically save results
+            pickle.dump(configs_r, f)
+
+        with open(os.path.join('results', 'configs_total_time_sp.p'), 'wb') as f:  # periodically save results
+            pickle.dump(configs_total_time, f)
+
     return i_star, current_delta
 
 
-def main():
+def main(epsilon, deltas):
     parser = argparse.ArgumentParser(description='Executes Structured Procrastination with a simulated environment.')
     parser.add_argument('--epsilon', help='Epsilon from the paper', type=float, default=0.1)
     # parser.add_argument('--delta', help='Delta from the paper', type=float, default=0.2)
@@ -106,10 +121,10 @@ def main():
     parser.add_argument('--theta-multiplier', help='Theta multiplier from the paper', type=float, default=2.0)
     parser.add_argument('--measurements-filename', help='Filename to load measurement results from', type=str, default='measurements.dump')
     parser.add_argument('--measurements-timeout', help='Timeout (seconds) used for the measurements', type=float, default=900.)
-    parser.add_argument('--total-time-budget', help='Total time (seconds) allowed', type=float, default=172800000.)  # 86400 seconds = 1 CPU day; 103680000 == 1200 CPU days
+    parser.add_argument('--total-time-budget', help='Total time (seconds) allowed', type=float, default=2160000000.)  # 86400 seconds = 1 CPU day; 103680000 == 1200 CPU days
     args = vars(parser.parse_args())
 
-    epsilon = args['epsilon']
+    # epsilon = args['epsilon']
     # delta = args['delta']
     zeta = args['zeta']
     k0 = args['k0']
@@ -131,7 +146,7 @@ def main():
     step_size = int(day_in_seconds)  # CPU day, in second
     stop_times = range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size)  # check results at 1,2,3,..,9,10,20,30,... CPU days
 
-    best_config_index, delta = structured_procrastination(env, num_configs, epsilon, zeta, k0, k_bar, theta_multiplier, stop_times)
+    best_config_index, delta = structured_procrastination(env, num_configs, epsilon, zeta, k0, k_bar, theta_multiplier, stop_times, deltas)
 
     print('best_config_index={}, delta={}'.format(best_config_index, delta))
     env.print_config_stats(best_config_index)
@@ -141,4 +156,22 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+
+    epsilons = [.9, .8, .7, .6, .5, .4, .3, .2, .1]
+    deltas = [.5, .4, .3, .2, .1]
+    results = []
+
+    for epsilon in epsilons:
+
+        print("running spc with epsilon={} for deltas={}".format(epsilon, deltas))
+        main(epsilon, deltas)
+
+        with open(os.path.join('results', 'results_sp_eps={}.p'.format(epsilon)), 'rb') as f:
+            results_eps = pickle.load(f)
+
+            for res in results_eps:
+                res['epsilon'] = epsilon
+                results.append(res)
+
+    with open(os.path.join('results', 'results_sp_grid.p'), 'wb') as f:
+        pickle.dump(results, f)

@@ -126,9 +126,8 @@ def main(epsilon, delta):
 
 if __name__ == '__main__':
 
-    # deltas = [.95, .9, .85, .8, .75, .7, .65, .6, .55, .5, .45, .4, .35, .3, .25, .2, .15, .1, .05]
-    deltas = [.5, .2]
-    epsilons = [.1]
+    epsilons = [.9, .85, .8, .75, .7, .65, .6, .55, .5, .45, .4, .35, .3, .25, .2, .15, .1]
+    deltas = [.5, .45, .4, .35, .3, .25, .2, .15, .1]
 
     results = []
     for epsilon in epsilons:
@@ -139,5 +138,5 @@ if __name__ == '__main__':
 
             results.append({'best_config':best_config_index, 'epsilon':epsilon, 'delta':delta, 'total_runtime':total_runtime, 'total_resumed_runtime':total_resumed_runtime})
 
-        with open(os.path.join('results', 'results_lb_eps=' + str(epsilon) + '.p'), 'wb') as f:
+        with open(os.path.join('results', 'results_lb_grid.p'), 'wb') as f:
             pickle.dump(results, f)

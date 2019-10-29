@@ -15,7 +15,7 @@ class ConfigurationTester():
 
     """
 
-    def __init__(self, cid, k0, theta_multiplier, update_lcb_every=300):
+    def __init__(self, cid, k0, theta_multiplier, update_lcb_every=1000):
         """
         Parameters:
             cid: config id
@@ -145,19 +145,10 @@ class ConfigurationTester():
         return self.r
 
 
-    # def get_delta(self, epsilon):
-    #     """
-    #
-    #     """
-    #     return sqrt(1 + epsilon) * self.q / self.r
-
-
     def _update_runtime_values(self, instance_id, new_rt, eps=1e-6):
         """
         Maintains the sorted list of unique runtime values and their counts.
         """
-
-        insert_ind = bisect.bisect_left(self.unique_values, new_rt)
 
         if instance_id in self.instance_runtimes_capped:
             old_rt = self.instance_runtimes_capped[instance_id]
@@ -168,10 +159,8 @@ class ConfigurationTester():
                 delete_ind = bisect.bisect_left(self.unique_values, old_rt)
                 del self.unique_values[delete_ind]
                 del self.unique_value_counts[old_rt]
-                # del self.unique_values[insert_ind]
-                # del self.unique_value_counts[old_rt]
 
-        insert_ind = bisect.bisect_left(self.unique_values, new_rt)  # unique_values may have changed, so get new insert index
+        insert_ind = bisect.bisect_left(self.unique_values, new_rt)  # get new insert index
         n = len(self.unique_values)
 
         if insert_ind < n:  # insert a new value

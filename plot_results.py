@@ -59,15 +59,6 @@ def plot_results():
     best_config_means_spc = [means_uncap[res['best_config']] for res in results_spc]
     times_spc = [res['total_runtime'] / day_in_seconds for res in results_spc]
 
-    ##### todo
-    mask = range(0, 10) + range(13, len(best_config_means_spc), 5)
-    best_config_means_spc = list(np.array(best_config_means_spc)[mask])
-    times_spc = list(np.array(times_spc)[mask])
-    # step_size = int(day_in_seconds)  # CPU day, in second
-    # stop_times = np.array(range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(24.*60.*60.*2700.) + 1, 10 * step_size))  # check results at 1,2,3,..,9,10,20,30,... CPU days
-    # AA = [x / day_in_seconds for x in stop_times[mask]]
-    #####
-
     colours_lb = [5. * config['delta'] ** 4 for config in results_lb]
     sizes_lb = [150. * config['epsilon'] for config in results_lb]
 

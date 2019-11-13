@@ -156,8 +156,6 @@ def main(epsilon, deltas):
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-
     epsilons = [.9, .8, .7, .6, .5, .4, .3, .2, .1]
     deltas = [.5, .4, .3, .2, .1]
     results = []
@@ -176,6 +174,4 @@ if __name__ == '__main__':
 
     with open(os.path.join('results', 'results_sp_grid.p'), 'wb') as f:
         pickle.dump(results, f)
-=======
-    main()
->>>>>>> bb278d5166196274dc809e578117381d9d5fb355
+

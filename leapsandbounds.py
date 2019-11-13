@@ -138,10 +138,7 @@ if __name__ == '__main__':
 
             results.append({'best_config':best_config_index, 'epsilon':epsilon, 'delta':delta, 'total_runtime':total_runtime, 'total_resumed_runtime':total_resumed_runtime})
 
-<<<<<<< HEAD
+
         with open(os.path.join('results', 'results_lb_grid.p'), 'wb') as f:
             pickle.dump(results, f)
-=======
-        with open(os.path.join('results', 'results_lb_eps=' + str(epsilon) + '.p'), 'wb') as f:
-            pickle.dump(results, f)
->>>>>>> bb278d5166196274dc809e578117381d9d5fb355
+

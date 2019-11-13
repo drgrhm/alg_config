@@ -36,7 +36,7 @@ def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplie
     # in line 10 of the paper with a heap.
     k, l, q, qq, r, r_sum, heap = [], [], [], [], [], [], []
     beta = math.log(k_bar / k0, 2)
-    for i in xrange(n):  # Line 2 in paper.
+    for i in range(n):  # Line 2 in paper.
         k.append(0)
         l.append(int(math.ceil(C / (epsilon * epsilon) * math.log(3 * beta * n / zeta))))
         q.append([])
@@ -44,7 +44,7 @@ def structured_procrastination(env, n, epsilon, zeta, k0, k_bar, theta_multiplie
         r.append([])
         r_sum.append(0)
         heapq.heappush(heap, (0, i))
-        for ll in xrange(l[i]):  # Line 6 in paper.
+        for ll in range(l[i]):  # Line 6 in paper.
             r[i].append(0)
             q[i].append((ll, k0))
 
@@ -144,7 +144,7 @@ def main(epsilon, deltas):
     print("running structured_procrastination")
 
     step_size = int(day_in_seconds)  # CPU day, in second
-    stop_times = range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size)  # check results at 1,2,3,..,9,10,20,30,... CPU days
+    stop_times = list(range(step_size, 10 * int(day_in_seconds), step_size)) + list(range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size))  # check results at 1,2,3,..,9,10,20,30,... CPU days
 
     best_config_index, delta = structured_procrastination(env, num_configs, epsilon, zeta, k0, k_bar, theta_multiplier, stop_times, deltas)
 
@@ -156,6 +156,7 @@ def main(epsilon, deltas):
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
 
     epsilons = [.9, .8, .7, .6, .5, .4, .3, .2, .1]
     deltas = [.5, .4, .3, .2, .1]
@@ -175,3 +176,6 @@ if __name__ == '__main__':
 
     with open(os.path.join('results', 'results_sp_grid.p'), 'wb') as f:
         pickle.dump(results, f)
+=======
+    main()
+>>>>>>> bb278d5166196274dc809e578117381d9d5fb355

@@ -100,8 +100,12 @@ def main():
     print("running structured_procrastination_confidence")
 
     step_size = int(day_in_seconds)  # CPU day, in second
+<<<<<<< HEAD
     # stop_times = range(step_size, 10 * int(day_in_seconds), step_size) + range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size)  # check results at 1,2,3,..,9,10,20,30,... CPU days
     stop_times = range(step_size, 10 * int(day_in_seconds) + 1, step_size) + range(50 * int(day_in_seconds), int(total_time_budget) + 1, 50 * step_size)  # check results at 1,2,3,..,9,10,50,100,150,... CPU days
+=======
+    stop_times = list(range(step_size, 10 * int(day_in_seconds), step_size)) + list(range(10 * int(day_in_seconds), int(total_time_budget) + 1, 10 * step_size))  # check results at 1,2,3,..,9,10,20,30,... CPU days
+>>>>>>> bb278d5166196274dc809e578117381d9d5fb355
 
     t0 = time.time()
     best_config_index, configs = structured_procrastination_confidence(env, num_configs, k0, theta_multiplier, total_time_budget, stop_times)

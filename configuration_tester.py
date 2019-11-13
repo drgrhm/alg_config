@@ -1,9 +1,6 @@
 #
 # Copyright 2019 D R Graham
 
-
-from __future__ import division
-
 from collections import deque
 from math import ceil, floor, log, sqrt
 import numpy as np

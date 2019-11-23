@@ -45,7 +45,7 @@ class ConfigurationTester():
         """
 
         if len(self.Q) < self.q:
-            self.r = self.r + 1
+            self.r += 1
             l = self.r
         else:
             l, theta = self.Q.pop()
@@ -73,7 +73,7 @@ class ConfigurationTester():
         else:
             self.q = ceil(25. * log(t * log(self.r, 2), 2))
 
-        return did_timeout, elapsed, self.lcb, len(self.instance_runtimes_capped)
+        return did_timeout, rt, self.lcb, len(self.instance_runtimes_capped)
 
 
     def _compute_confidence_bound(self, t):
@@ -81,6 +81,8 @@ class ConfigurationTester():
         Compute the lcb from the paper.
         """
         n = len(self.instance_runtimes_capped)
+        if n == 0:  # if no runtime values, prioritize this config
+            return -1e-6
         ecdf = []  # empirical cumulative distribution of runtime values
         lcb = 0.
         for i in range(len(self.unique_values)):
@@ -106,7 +108,6 @@ class ConfigurationTester():
         if t - self.t_last_update_lcb > self.update_lcb_every:  # re-compute lcb if enough iterations have elapsed
             self.lcb = self._compute_confidence_bound(t)
             self.t_last_update_lcb = t
-
         return self.lcb
 
 
@@ -114,21 +115,13 @@ class ConfigurationTester():
         """
         Implementation of Beta function from paper.
         """
+        _t = max(t, 1)  # setting initial values so that we don't take log of 0
+        _r = max(self.r, 1)
         k = floor(log(1 / p, 2))
-
-        if self.r == 0:  # setting initial values so that we don't take logs of 0
-            _r = 1.
-        else:
-            _r = self.r
-        if t == 0:
-            _t = 1
-        else:
-            _t = t
         if k == 0:
-            eps = 3. / _r
+            eps = sqrt(9. * log(_t) / _r)
         else:
             eps = sqrt(9 * 2 ** k * log(k * _t) / _r)
-
         if eps <= 0.5:
             return p / (1 + eps)
         else:
